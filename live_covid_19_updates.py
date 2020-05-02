@@ -8,40 +8,36 @@ from plyer import notification
 
 class LiveCoronaVirusUpdate:
     """ Gives live corona virus updates in a day for India """
-    def __init__(self):
-        self.__url = "https://www.mohfw.gov.in/"
-        self.__current_coronavirus_positive_count = 0
-        self.__updated_count = 0
 
-        print("---------------------------------------------------")
-        print("COVID-19 India Update from {}".format(self.__url))
-        print("---------------------------------------------------")
+    @staticmethod
+    def get_latest_count_of_active_cases() -> str:
+        """ Get the latest count of active corona positive cases in a day """
+        url = LiveCoronaVirusUpdate.get_url()
+        html_structure = LiveCoronaVirusUpdate.get_html(url)
 
-    def set_current_coronavirus_positive_count(self, current_coronavirus_positive_count: int) -> int:
-        """
-        Setter for the current coronaviurs positive count.
+        total_cases_india = html_structure.find('div', attrs={'class': 'maincounter-number'})
+        total_cases_india = total_cases_india.find('span')
+        total_cases_india = total_cases_india.string
 
-        :param current_coronavirus_positive_count: current active cases of coronavirus
-        :return: current active cases of coronavirus
-        """
-        self.__current_coronavirus_positive_count = current_coronavirus_positive_count
-        return self.__current_coronavirus_positive_count
+        news_update = html_structure.find('div', attrs={'id': 'news_block'})
 
-    def update_coronavirus_positive_count(self, new_total_active_cases):
-        """
-        Updates coronavirus positive count.
+        date = datetime.datetime.now().strftime("%Y-%m-%d")
+        news_date = 'newsdate' + date
 
-        New total active cases will be always greater than current coronavirus positive count (fixed)
+        news_today = news_update.find('div', attrs={'id': news_date})
+        new_cases_india = news_today.find('strong')
+        new_cases_india = new_cases_india.string.split(' ')[0]
 
-        :param new_total_active_cases: active cases in a day + total active cases = new_total_active_cases
-        :return: rise in coronavirus positives count
-        """
+        return total_cases_india, new_cases_india
 
-        self.__updated_count += (new_total_active_cases - self.__current_coronavirus_positive_count)
-        self.__current_coronavirus_positive_count = new_total_active_cases
-        return self.__updated_count
+    @staticmethod
+    def get_url() -> str:
+        """ Get data from the Ministry of Health and Wellness of India """
+        url = "https://www.worldometers.info/coronavirus/country/india/"
+        return url
 
-    def get_html(self):
+    @staticmethod
+    def get_html(url: str) -> object:
         """ Downloads the homepage structure """
 
         # Attaching headers for the browser compatibility
@@ -49,50 +45,57 @@ class LiveCoronaVirusUpdate:
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36"
         }
 
-        html = requests.get(self.__url, headers=headers)
+        html = requests.get(url, headers=headers)
         soup = BeautifulSoup(html.content, "html.parser")
         return soup
 
     @staticmethod
-    def system_notification(title: str, current_active_cases: int, extra_info: str) -> object:
+    def get_status():
+        """ Updates the status active corona positive in a day detected in India """
+        total_cases, latest_active_cases = LiveCoronaVirusUpdate.get_latest_count_of_active_cases()
+        return total_cases, latest_active_cases
+
+    @staticmethod
+    def get_message(total: str, active_cases: str) -> str:
+        return f'Total: {total}, Active Cases: {active_cases}'
+
+    @staticmethod
+    def get_datetime():
+        current = datetime.datetime.now()
+        current_month = current.strftime("%b")
+        current_date = current.day
+        current_year = current.year
+        return current_date, current_month, current_year
+
+    @staticmethod
+    def print_status():
+        date, month, year = LiveCoronaVirusUpdate.get_datetime()
+        timestamp = datetime.datetime.now()
+        print(f'[Last Update]: {date} {month} {year}: {timestamp.hour}:{timestamp.minute}')
+        print(f'Updating.....')
+
+    @staticmethod
+    def system_notification(title: str) -> object:
         """
         To display notification in the system
 
         :param title: title of system notification
         :param current_active_cases: shows count of positive coronavirus patients in a day
-        :param extra_info: extra message string
         """
-        corona_positive_count = LiveCoronaVirusUpdate().set_current_coronavirus_positive_count(current_active_cases)
-        enable_update = False
-
         while True:
-            corona_positive_count = LiveCoronaVirusUpdate.update_coronavirus_positive_count()
+            total, active_cases = LiveCoronaVirusUpdate.get_status()
 
-            message = f'{extra_info}: {corona_positive_count}'
-            notification.notify(title=title, message=message, timeout=10)
+            message = LiveCoronaVirusUpdate.get_message(total=total, active_cases=active_cases)
+            notification.notify(title=title, message=message, timeout=20)
 
+            LiveCoronaVirusUpdate.print_status()
             # Active cases updates in 1 hour
-            time.sleep(3600)
+            time.sleep(60)
 
 
-homepage_structure_html = LiveCoronaVirusUpdate().get_html()
-
-site_stats_count = homepage_structure_html.find('div', attrs={'class': 'site-stats-count'})
-
-active_cases = site_stats_count.find('li', attrs={'class': 'bg-blue'})
-active_cases = active_cases.find('strong')
-
-current = datetime.datetime.now()
-
-current_month = current.strftime("%b")
-current_date = current.day
-current_year = current.year
+current_date, current_month, current_year = LiveCoronaVirusUpdate.get_datetime()
 
 title = "LIVE: COVID-19 India Outbreak - {} {} {}".format(current_date, current_month, current_year)
 
-active_cases_count = active_cases.string
-extra_info = "Active cases today in India"
-
-notifications = LiveCoronaVirusUpdate.system_notification(
-    title=title, current_active_cases=active_cases_count, extra_info=extra_info
-)
+# Start giving updates
+notifications = LiveCoronaVirusUpdate.system_notification(title=title)
