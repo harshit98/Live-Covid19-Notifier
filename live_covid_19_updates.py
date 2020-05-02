@@ -57,10 +57,13 @@ class LiveCoronaVirusUpdate:
 
     @staticmethod
     def get_message(total: str, active_cases: str) -> str:
-        return f'Total: {total}, Active Cases: {active_cases}'
+        """ Message toast in system notification """
+        return f'Total Cases in India: {total}\n' \
+               f'New Active Cases in India: {active_cases}'
 
     @staticmethod
     def get_datetime():
+        """ Gets current date, month, year """
         current = datetime.datetime.now()
         current_month = current.strftime("%b")
         current_date = current.day
@@ -69,6 +72,7 @@ class LiveCoronaVirusUpdate:
 
     @staticmethod
     def print_status():
+        """ Prints status of the script in the terminal """
         date, month, year = LiveCoronaVirusUpdate.get_datetime()
         timestamp = datetime.datetime.now()
         print(f'[Last Update]: {date} {month} {year}: {timestamp.hour}:{timestamp.minute}')
@@ -80,17 +84,16 @@ class LiveCoronaVirusUpdate:
         To display notification in the system
 
         :param title: title of system notification
-        :param current_active_cases: shows count of positive coronavirus patients in a day
         """
         while True:
             total, active_cases = LiveCoronaVirusUpdate.get_status()
 
             message = LiveCoronaVirusUpdate.get_message(total=total, active_cases=active_cases)
-            notification.notify(title=title, message=message, timeout=20)
+            notification.notify(title=title, message=message, timeout=40)
 
             LiveCoronaVirusUpdate.print_status()
             # Active cases updates in 1 hour
-            time.sleep(60)
+            time.sleep(3600)
 
 
 current_date, current_month, current_year = LiveCoronaVirusUpdate.get_datetime()
