@@ -92,8 +92,8 @@ class LiveCoronaVirusUpdate:
             notification.notify(title=title, message=message, timeout=40)
 
             LiveCoronaVirusUpdate.print_status()
-            # Active cases updates in 1 hour
-            time.sleep(3600)
+            # Active cases updates in 30 minutes
+            time.sleep(1800)
 
 
 current_date, current_month, current_year = LiveCoronaVirusUpdate.get_datetime()
