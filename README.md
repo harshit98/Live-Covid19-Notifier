@@ -1,6 +1,3 @@
-# Live-COVID19-Notifier
-Displays live notifications related to COVID-19 cases in India as real time notification
-
 <h1 align="center">LIVE: COVID-19 Notifier 😷</h1>
 <p>
     <img src='https://img.shields.io/badge/maintainer-harshit98-blue' />
@@ -13,6 +10,7 @@ Displays live notifications related to COVID-19 cases in India as real time noti
   </a>
 </p>
 
+> Displays live notifications related to COVID-19 cases in India as real time notification.
 
 ## 📸 Screenshot
 ![Preview](screenshot.png)
